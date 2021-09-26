@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace MyCustomTools1
 {
@@ -19,6 +7,18 @@ namespace MyCustomTools1
     /// </summary>
     public partial class TestViewBox : Window
     {
+        /* scroll not working in viewbox
+         * tb in vb - se lungeste si micsoreaza
+         * grid in vb - la fel
+         * 
+         * vb stretch:
+         * - none - vb larger than col/row when too much text
+         * - uniform - starts big, becomes infinitely small with too much text
+         * - fill - starts big and becomes small separately in each direction
+         * - uniform to fill - starts big and becomes larger than row/col with too much text
+         * 
+         * vb needs to resize itself to resize content
+         */
         public TestViewBox()
         {
             InitializeComponent();

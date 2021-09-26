@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
         <Button Content="un text foarte foarte foarte lung" Margin="10,10,10,10" Background="PaleVioletRed" Grid.Row="2" Grid.Column="2"/>
         <Image Margin="10,10,10,10" Grid.Row="1" Grid.Column="2" Source="BlackBishopOnWhite.jpg"/>
-        <Viewbox Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" >
+        <Viewbox Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Stretch="UniformToFill">
             <TextBox VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" AcceptsReturn="True"/>
         </Viewbox>
     </Grid>

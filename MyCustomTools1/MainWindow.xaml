@@ -7,6 +7,8 @@
         mc:Ignorable="d"
         Title="MainWindow">
     <Grid Name="mygrid">
-        
+        <Viewbox Margin="100,100,0,0" Width="200" Height="200">
+            <Button Margin="40,40,0,0" Width="40" Height="40" HorizontalAlignment="Left" VerticalAlignment="Top" Content="ceva"/>
+        </Viewbox>
     </Grid>
 </Window>

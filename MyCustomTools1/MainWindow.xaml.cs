@@ -1,7 +1,5 @@
-﻿using System.Windows;
-using System.Timers;
-using System;
-using System.Windows.Threading;
+﻿using System;
+using System.Windows;
 
 namespace MyCustomTools1
 {
@@ -10,16 +8,11 @@ namespace MyCustomTools1
     /// </summary>
     public partial class MainWindow : Window
     {
-        /* issues:
-         * image stretch - default is ok
-         * property binding
-         * sesize text
-         * cell size as percentage - Width="2*" - 20% and/or such
-         */
-
         public MainWindow()
         {
             InitializeComponent();
+            TestSerialization tb = new TestSerialization();
+            tb.Show();
         }
     }
 }

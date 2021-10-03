@@ -31,7 +31,7 @@ namespace MyCustomTools1
             {
                 if (SecondResult.Length == 1)
                 {
-                    Increment = new TimeSpan();
+                    Increment = TimeSpan.Zero;
                 }
                 else
                 {
@@ -60,8 +60,8 @@ namespace MyCustomTools1
         /// </summary>
         public PlayerTimer(bool countDown)
         {
-            Time = new TimeSpan();
-            Increment = new TimeSpan();
+            Time = TimeSpan.Zero;
+            Increment = TimeSpan.Zero;
             Interval = new TimeSpan(0, 0, 0, 0, 100);
             RedTextThreshold = new TimeSpan(0, 0, 30);
             CountDown = countDown;
@@ -145,17 +145,98 @@ namespace MyCustomTools1
         }
     }
 
-    public class TimeControl
+    public class TimeControl : Grid
     {
+        private const int ButtonSize = 200, TextBoxSize = 140, FreeSpaceSize = 25, GapSize = 5, fontSize = 20, RowHeight = 35;
         private readonly Timer MyTimer;
-        private readonly PlayerTimer WhiteTimer, BlackTimer;
-        private bool CurrentPlayer;
-        public PlayerTimer Clock(bool player)
+        private readonly PlayerTimer WhiteTimer, BlackTimer, WhiteMoveTimer, BlackMoveTimer;
+        private readonly ComboBox IncrementType; // start and stop are managed by changing the main tabular menu selection
+
+        private string PlayerString(bool player)
         {
-            if (player) return WhiteTimer;
-            return BlackTimer;
+            return player ? "White" : "Black";
+        }
+        private PlayerTimer GetTimer(bool player)
+        {
+            return player ? WhiteTimer : BlackTimer;
+        }
+        private PlayerTimer GetMoveTimer(bool player)
+        {
+            return player ? WhiteMoveTimer : BlackMoveTimer;
         }
 
+        private void Tick(object sender, ElapsedEventArgs e)
+        {
+            PlayerTimer playerTimer = GetTimer(CurrentPlayer), currentMoveTimer = GetMoveTimer(CurrentPlayer);
+            playerTimer.Tick();
+            currentMoveTimer.Tick();
+            if (playerTimer.IsZero)
+            {
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    PauseTimer();
+                    MessageBox.Show(PlayerString(CurrentPlayer) + "'s time finished!\n" +
+                        "Winner is " + PlayerString(!CurrentPlayer) + "!");
+                }));
+            }
+        }
+        private void InitializeGrid()
+        {
+            RowDefinition rowDefinition = new RowDefinition();
+            rowDefinition.Height = new GridLength(RowHeight, GridUnitType.Pixel);
+            RowDefinitions.Add(rowDefinition);
+
+            rowDefinition = new RowDefinition();
+            rowDefinition.Height = new GridLength(RowHeight, GridUnitType.Pixel);
+            RowDefinitions.Add(rowDefinition);
+
+            ColumnDefinition columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(FreeSpaceSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+
+            columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(TextBoxSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+
+            columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(GapSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+
+            columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(ButtonSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+
+            columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(GapSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+
+            columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(TextBoxSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+
+            columnDefinition = new ColumnDefinition();
+            columnDefinition.Width = new GridLength(FreeSpaceSize, GridUnitType.Pixel);
+            ColumnDefinitions.Add(columnDefinition);
+        }
+
+        public double FontSize
+        {
+            get
+            {
+                return WhiteTimer.FontSize;
+            }
+            set
+            {
+                foreach (FrameworkElement element in Children)
+                {
+                    if (element is Control)
+                    {
+                        (element as Control).FontSize = value;
+                    }
+                }
+            }
+        }
+        public bool CurrentPlayer { get; private set; }
         public PlayerTimer ActiveTimer
         {
             get
@@ -170,14 +251,97 @@ namespace MyCustomTools1
             CurrentPlayer = true;
             MyTimer = new Timer(100);
             MyTimer.Elapsed += new ElapsedEventHandler(Tick);
+
+            InitializeGrid();
+            Background = new SolidColorBrush(Color.FromArgb(0xff, 0xef, 0xef, 0xef));
+
             WhiteTimer = new PlayerTimer(true);
+            WhiteTimer.Margin = new Thickness(0, 5, 0, 0);
+            SetColumn(WhiteTimer, 1);
+            SetRow(WhiteTimer, 0);
+            Children.Add(WhiteTimer);
+            WhiteTimer.Set(new TimeSpan(0, 5, 0), TimeSpan.Zero);
+
+            IncrementType = new ComboBox
+            {
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 15, 0, 15)
+            };
+
+            string[] increments = { "Fisher Increment", "Simple Delay", "Bronstein Delay" };
+            foreach (string s in increments)
+            {
+                IncrementType.Items.Add(s);
+            }
+            IncrementType.SelectedIndex = 0;
+            SetColumn(IncrementType, 3);
+            SetRow(IncrementType, 0);
+            SetRowSpan(IncrementType, 2);
+            Children.Add(IncrementType);
+
             BlackTimer = new PlayerTimer(true);
+            BlackTimer.Margin = new Thickness(0, 5, 0, 0);
+            SetColumn(BlackTimer, 5);
+            SetRow(BlackTimer, 0);
+            Children.Add(BlackTimer);
+            BlackTimer.Set(new TimeSpan(0, 5, 0), TimeSpan.Zero);
+
+            WhiteMoveTimer = new PlayerTimer(false);
+            WhiteMoveTimer.Margin = new Thickness(0, 5, 0, 0);
+            SetColumn(WhiteMoveTimer, 1);
+            SetRow(WhiteMoveTimer, 1);
+            Children.Add(WhiteMoveTimer);
+            WhiteMoveTimer.Set(TimeSpan.Zero, TimeSpan.Zero);
+
+            BlackMoveTimer = new PlayerTimer(false);
+            BlackMoveTimer.Margin = new Thickness(0, 5, 0, 0);
+            SetColumn(BlackMoveTimer, 5);
+            SetRow(BlackMoveTimer, 1);
+            Children.Add(BlackMoveTimer);
+            BlackMoveTimer.Set(TimeSpan.Zero, TimeSpan.Zero);
+
+            FontSize = fontSize;
         }
 
-        private void Tick(object sender, ElapsedEventArgs e)
+        public void ChangeCurrentPlayer()
         {
-            if (CurrentPlayer) WhiteTimer.Tick();
-            else BlackTimer.Tick();
+            GetTimer(CurrentPlayer).AddIncrement();
+            CurrentPlayer = !CurrentPlayer;
+            GetMoveTimer(CurrentPlayer).Set(TimeSpan.Zero, TimeSpan.Zero);
+        }
+
+        public void StartTimer()
+        {
+            string errors = "";
+            if (WhiteTimer.IsZero)
+            {
+                errors += "Cannot start because White player has invalid time!";
+            }
+            if (BlackTimer.IsZero)
+            {
+                errors += "Cannot start because Black player has invalid time!";
+            }
+            if (errors == "")
+            {
+                MyTimer.Start();
+                IncrementType.IsEnabled = false;
+                WhiteTimer.IsReadOnly = true;
+                BlackTimer.IsReadOnly = true;
+            }
+            else
+            {
+                MessageBox.Show(errors);
+            }
+        }
+
+        public void PauseTimer()
+        {
+            MyTimer.Stop();
+            IncrementType.IsEnabled = true;
+            WhiteTimer.IsReadOnly = false;
+            BlackTimer.IsReadOnly = false;
         }
     }
 
